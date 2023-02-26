@@ -1,3 +1,5 @@
+#include "Packet.h"
+
 // Windows crap
 #undef UNICODE
 #define WIN32_LEAN_AND_MEAN
@@ -140,7 +142,7 @@ void Update()
     } while (clientSocket != INVALID_SOCKET);
 
     // Handle client connections
-    char buffer[512];
+    uint8_t buffer[512];
     for(int i = 0; i < k_MaxClients; ++i)
     {
         Client& client = g_State.m_Clients[i];
@@ -157,11 +159,18 @@ void Update()
 
         // Handle incoming data.
         // TODO: We need to setup a timeout for each client in case we don't get data or the client doesn't close the socket
-        int result = recv(client.m_Socket, buffer, 512, 0);
+        int result = recv(client.m_Socket, (char*)buffer, 512, 0);
         if(result > 0)
         {            
             printf("[INFO]: Recieved data from client \n");
-            send(client.m_Socket, buffer, result, 0); // Sends the data bag for a pingback
+            if(result == sizeof(DataPacket))
+            {
+                DataPacket packet;
+                memcpy(&packet, buffer, result);
+                printf("[INFO]: Data from client. Temperature:%f Humidity:%f Pressure:%f \n", packet.m_Temperature, packet.m_Humidity, packet.m_Pressure);
+
+                client.m_State = ClientState::CLOSING;
+            }
         }
         else if(result == 0)
         {
