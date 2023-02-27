@@ -38,14 +38,18 @@
                     </div>
                     <div class="mb-3">
                         <label for="password-conf-reg" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="password-conf-reg" name="password-confirm">
+                        <input type="password" class="form-control" id="password-conf-reg" name="password_confirm">
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
             </div>
+        {{#if message }}
+          <h4 class="alert alert-danger mt-4">{{message}}</h4>
+        {{/if}}
         </div>
     </div>
 </div>
+
 
 </body>
 </html>
