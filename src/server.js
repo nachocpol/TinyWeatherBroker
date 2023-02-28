@@ -88,6 +88,43 @@ app.post("/auth/register", (req, res) => {
     })
 })
 
+app.post("/auth/login", (req, res) => {
+    const {email, password} = req.body
+
+    db.query("SELECT email FROM users WHERE email = ?", [email], async(error, dbSelectResult) => {
+        if(error)
+        {
+            console.error(error)
+            res.render("login", {message: "Unexpected DB error"})
+        }
+        else if(dbSelectResult.length <= 0)
+        {
+            res.render("login", {message: "Email not in use"})
+        }
+        else
+        {
+            db.query("SELECT password FROM users WHERE email =?", [email], async(error, dbPassSelectResult) => {
+                if(error)
+                {
+                    console.error(error)
+                    res.render("login", {message: "Unexpected DB error"})
+                }
+                else
+                {
+                    if(await bcrypt.compare(password, dbPassSelectResult[0].password))
+                    {
+                        res.render("login", {message: "User loged in!"})
+                    }
+                    else
+                    {
+                        res.render("login", {message: "Invalid password"})
+                    }
+                }
+            })
+        }
+    })    
+})
+
 app.listen(appPort ,() => {
     console.log('App started')
 })
