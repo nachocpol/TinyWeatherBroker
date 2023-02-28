@@ -4,6 +4,7 @@ const express = require("express")
 const mysql = require("mysql")
 const path = require("path")
 const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
 
 // Load env variables
 dotenv.config()
@@ -113,6 +114,9 @@ app.post("/auth/login", (req, res) => {
                 {
                     if(await bcrypt.compare(password, dbPassSelectResult[0].password))
                     {
+                        var token = jwt.sign({data : email}, process.env.APP_SECRET, {expiresIn: '5m'})
+                        console.log(token)
+
                         res.render("login", {message: "User loged in!"})
                     }
                     else
