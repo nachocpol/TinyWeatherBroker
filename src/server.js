@@ -5,10 +5,14 @@ const mysql = require("mysql")
 const path = require("path")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const cookieParser = require("cookie-parser")
+const handleBars = require("handlebars")
+const fs = require("fs")
 
 // Load env variables
 dotenv.config()
 
+// Startup connection with DB
 const db = mysql.createPool({
     host : process.env.DB_HOST,
     port : process.env.DB_PORT,
@@ -36,6 +40,11 @@ app.set("view engine", 'hbs')
 app.use(express.static(publicAppDir))
 app.use(express.urlencoded({extended: 'false'}))
 app.use(express.json())
+app.use(cookieParser())
+
+// Setup handlebars
+var navString = fs.readFileSync("views/nav.hbs").toString()
+handleBars.registerPartial("navTemplate", handleBars.compile(navString))
 
 console.log("Public path for app is: " + publicAppDir)
 
@@ -92,6 +101,12 @@ app.post("/auth/register", (req, res) => {
 app.post("/auth/login", (req, res) => {
     const {email, password} = req.body
 
+    if(req.cookies)
+    {
+        console.log("Got a session from the user, auth again? ")
+        console.log(req.cookies)
+    }
+
     db.query("SELECT email FROM users WHERE email = ?", [email], async(error, dbSelectResult) => {
         if(error)
         {
@@ -115,7 +130,13 @@ app.post("/auth/login", (req, res) => {
                     if(await bcrypt.compare(password, dbPassSelectResult[0].password))
                     {
                         var token = jwt.sign({data : email}, process.env.APP_SECRET, {expiresIn: '5m'})
-                        console.log(token)
+
+                        // User will store the session token as a cookie. Cookie will expire and delete after 5m
+                        res.cookie("sessionToken", token, {
+                            maxAge : 300000,
+                            httpOnly : true,
+                            sameSite : "lax"
+                        })
 
                         res.render("login", {message: "User loged in!"})
                     }
