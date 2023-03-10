@@ -6,8 +6,7 @@ const path = require("path")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const cookieParser = require("cookie-parser")
-const handleBars = require("handlebars")
-const fs = require("fs")
+const handlebars = require("express-handlebars")
 
 // Load env variables
 dotenv.config()
@@ -34,19 +33,26 @@ db.getConnection((err, connection) => {
 
 // Configure app
 const publicAppDir = path.join(__dirname, "./public")
+console.log("Public path for app is: " + publicAppDir)
 const appPort = process.env.APP_PORT
 const app = express()
-app.set("view engine", 'hbs')
+
+// Configure handlebars
+const hbs = handlebars.create({
+    layoutsDir: path.join(__dirname, "views/layouts"),
+    partialsDir: path.join(__dirname, "views/partials"),
+    extname : "hbs",
+    defaultLayout : "main"
+});
+app.engine("hbs", hbs.engine);
+app.set("view engine", "hbs");
+app.set("views", path.join(__dirname, "views"));
+
+// Other configurations for the app
 app.use(express.static(publicAppDir))
 app.use(express.urlencoded({extended: 'false'}))
 app.use(express.json())
 app.use(cookieParser())
-
-// Setup handlebars
-var navString = fs.readFileSync("views/nav.hbs").toString()
-handleBars.registerPartial("navTemplate", handleBars.compile(navString))
-
-console.log("Public path for app is: " + publicAppDir)
 
 app.get("/", (req, res) => {
     res.render("index")
