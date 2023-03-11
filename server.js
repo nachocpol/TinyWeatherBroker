@@ -156,6 +156,11 @@ app.post("/auth/login", (req, res) => {
     })    
 })
 
+// This will deal with the data sent by the sensors
+app.post("/data", (req, res) => {
+    
+})
+
 app.listen(appPort ,() => {
     console.log('App started')
 })
