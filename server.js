@@ -158,7 +158,12 @@ app.post("/auth/login", (req, res) => {
 
 // This will deal with the data sent by the sensors
 app.post("/data", (req, res) => {
-    
+    // This is 0 secure right now...
+    // Users could send malformed data and we will get asserts in the runtime
+    // Also. Any user can potentially send data nothing we can do.
+    // Maybe we need some form of auth, maybe API key?
+    console.log(req.body)
+    const {magic, temperature} = req.body
 })
 
 app.listen(appPort ,() => {
