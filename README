@@ -1,0 +1,9 @@
+This is an experimental web server that recieves data from the TinyWeather logger device and stores it in a database. It also serves data as a webpage!
+
+
+
+To run the node server: npx nodemon server.js
+The MySql database has to be running
+
+
+To install things you can do: npm i hbs
